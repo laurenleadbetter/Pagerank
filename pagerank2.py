@@ -11,7 +11,7 @@ import gzip
 import csv
 import logging
 import gensim.downloader as api
-vectors = api.load('word2vec-google-news-300')
+vectors = api.load('glove-wiki-gigaword-100')
 
 class WebGraph():
 
