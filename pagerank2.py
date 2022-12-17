@@ -125,9 +125,9 @@ class WebGraph():
             n = self.P.shape[0]
 
             # Calculate a
-            non_dangling_nodes = torch.sparse.sum(self.P,1).indices()
+            nondangling_nodes = torch.sparse.sum(self.P,1).indices()
             a = torch.ones([n,1])
-            a[non_dangling_nodes] = 0
+            a[nondangling_nodes] = 0
 
             # create variables if none given
             if v is None:
@@ -156,13 +156,6 @@ class WebGraph():
                         alpha=alpha
                         )
                 x /= torch.norm(x)
-                
-                # compute the new x vector using Eq (5.1)
-                # FIXME: Task 1
-                # HINT: this can be done with a single call to the `torch.sparse.addmm` function,
-                # but you'll have to read the code above to figure out what variables should get passed to that function
-                # and what pre/post processing needs to be done to them
-                
                 # output debug information
                 residual = torch.norm(x-xprev)
                 logging.debug(f'i={i} residual={residual}')
@@ -175,52 +168,73 @@ class WebGraph():
             return x.squeeze()
 
 
-    def search(self, pi, query = '', max_results = 10, s_weight = .05, power = 30):
+    def search(self, pi, query='', max_results=10, s_weight = .03, power =30):
         '''
         Logs all urls that match the query.
         Results are displayed in sorted order according to the pagerank vector pi.
         '''
         n = self.P.shape[0]
+        k = min(max_results, n)
 
-        sim = vectors.most_similar(args.search_query)
+        #changes
+
+        S = vectors.most_similar(args.search_query)
 
         for i in range(n):
-            n2, score, w_weight = 0,0,0
+            new_n, score, w_weight = 0,0,0
 
-            url2 = self._index_to_url(i)
+            urll = self._index_to_url(i)
 
-            if does_url_satisfy_query(url2, query):
-                n2 += 1
-                w_weight += s_weight
+            if is_url_satisfies_query(urll, query):
+                new_n+=1
+                w_weight+=s_weight
 
             for word in range(10):
-                w = sim[word][0]
+                w= S[word][0]
 
-                if does_url_satisfy_query(url2, w):
-                    n2 += 1
-                    w_weight += sim[word][1]**power
+                if is_url_satisfies_query(urll,w):
+                    new_n+=1
+                    w_weight+=S[word][1]**power
 
-            score += n2*w_weight
+            score+= new_n*w_weight
 
-            pi[i] += score
+            pi[i]+=score
 
 
-def does_url_satisfy_query(url,query):
-    satisfy = False
+        #old code
+
+        vals,indices = torch.topk(pi,n)
+
+        matches = 0
+        for i in range(n):
+            if matches >= max_results:
+                break
+            index = indices[i].item()
+            url = self._index_to_url(index)
+            pagerank = vals[i].item()
+            if url_satisfies_query(url,query):
+                logging.info(f'rank={matches} pagerank={pagerank} url={url}')
+                matches += 1
+
+
+def is_url_satisfies_query(url,query):
+    satisfies = False
     terms = query.split()
-    num_terms = 0
+
+    num_terms=0
     for term in terms:
         if term[0] != '-':
-            num_terms += 1
+            num_terms+=1
             if term in url:
-                satisfy = True
-    if num_terms == 0:
-        satisfy = True
+                satisfies = True
+    if num_terms==0:
+        satisfies=True
+
     for term in terms:
         if term[0] == '-':
             if term[1:] in url:
                 return False
-    return satisfy
+    return satisfies
 
 
 
@@ -248,25 +262,27 @@ def url_satisfies_query(url, query):
     >>> url_satisfies_query('www.lawfareblog.com/covid-19-speech', '')
     True
     '''
-    satisfy = False
+    satisfies = False
     terms = query.split()
     synonyms = vectors.most_similar(args.search_query)
 
     for i in range(8):
         terms.append(synonyms[i][0])
-    num_terms = 0
+
+    num_terms=0
     for term in terms:
         if term[0] != '-':
-            num_terms += 1
+            num_terms+=1
             if term in url:
-                satisfy = True
-    if num_terms == 0:
-        satisfy = True
+                satisfies = True
+    if num_terms==0:
+        satisfies=True
+
     for term in terms:
         if term[0] == '-':
             if term[1:] in url:
                 return False
-    return satisfy
+    return satisfies
 
 
 if __name__=='__main__':
@@ -281,6 +297,7 @@ if __name__=='__main__':
     parser.add_argument('--epsilon', type=float, default=1e-6)
     parser.add_argument('--max_results', type=int, default=10)
     parser.add_argument('--verbose', action='store_true')
+    #add some argument to be parsed 
     parser.add_argument('--power',type=int, default=30)
     parser.add_argument('--s_weight',type=float, default=.03)
     args = parser.parse_args()
