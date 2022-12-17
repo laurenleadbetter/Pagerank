@@ -5,12 +5,16 @@ This file calculates pagerank vectors for small-scale webgraphs.
 See the README.md for example usage.
 '''
 
+
 import math
 import torch
 import gzip
 import csv
-
+import gensim.downloader
 import logging
+
+vectors= gensim.downloader.load('glove-twitter-25')
+
 
 
 class WebGraph():
@@ -97,8 +101,6 @@ class WebGraph():
         then each url satisfying the query has the vector entry set to 1;
         all other entries are set to 0.
         '''
-
-
         n = self.P.shape[0]
 
         if query is None:
@@ -106,32 +108,30 @@ class WebGraph():
 
         else:
             v = torch.zeros(n)
-            # FIXME: implement Task 2
-            for i in range(n):
-                url = self._index_to_url(i)
-                if url_satisfies_query(url,query) == True:
-                   
+            for url,i in self.url_dict.items():
+                if url_satisfies_query(url, query):
                     v[i] = 1
 
-        
         v_sum = torch.sum(v)
-        assert(v_sum > 0)
-        #getting error cuz condition is false 
+        assert(v_sum>0)
         v /= v_sum
 
         return v
 
 
-
     def power_method(self, v=None, x0=None, alpha=0.85, max_iterations=1000, epsilon=1e-6):
         '''
         This function implements the power method for computing the pagerank.
-
         The self.P variable stores the $P$ matrix.
         You will have to compute the $a$ vector and implement Equation 5.1 from "Deeper Inside Pagerank."
         '''
         with torch.no_grad():
             n = self.P.shape[0]
+
+            # Calculate a
+            nondangling_nodes = torch.sparse.sum(self.P,1).indices()
+            a = torch.ones([n,1])
+            a[nondangling_nodes] = 0
 
             # create variables if none given
             if v is None:
@@ -144,42 +144,22 @@ class WebGraph():
                 x0 = torch.unsqueeze(x0,1)
             x0 /= torch.norm(x0)
 
-
-            #calculate a 
-            nondangling_nodes = torch.sparse.sum(self.P,1).indices()
-            a = torch.ones([n,1])
-            a[nondangling_nodes] = 0 
-
             # main loop
             xprev = x0
             x = xprev.detach().clone()
             for i in range(max_iterations):
                 xprev = x.detach().clone()
 
-                # compute the new x vector using Eq (5.1)
-                # FIXME: Task 1
-                # HINT: this can be done with a single call to the `torch.sparse.addmm` function,
-                # but you'll have to read the code above to figure out what variables should get passed to that function
-                # and what pre/post processing needs to be done to them
-
-                # Added Matrix
-                ## @ - used for matrix multiplication 
-
-                added_matrix = ((alpha * xprev.t() @ a) + (1- alpha)) * v.t()
-
-                #Dense Matrix
-
-                dense = self.P
-
-                #Sparse
-
-                sparse = alpha * xprev
-
+                q = (alpha*x.t()@a + (1-alpha)) * v.t()
+                
                 x = torch.sparse.addmm(
-                    added_matrix.t(),
-                    dense.t(),
-                    sparse)
-
+                        q.t(),
+                        self.P.t(),
+                        x,
+                        beta=1,
+                        alpha=alpha
+                        )
+                x /= torch.norm(x)
                 # output debug information
                 residual = torch.norm(x-xprev)
                 logging.debug(f'i={i} residual={residual}')
@@ -198,6 +178,7 @@ class WebGraph():
         Results are displayed in sorted order according to the pagerank vector pi.
         '''
         n = self.P.shape[0]
+        k = min(max_results, n)
         vals,indices = torch.topk(pi,n)
 
         matches = 0
@@ -219,7 +200,6 @@ def url_satisfies_query(url, query):
     But, if a word is preceded by the negation sign `-`,
     then the function returns False if that word is present in the url,
     even if it would otherwise return True.
-
     >>> url_satisfies_query('www.lawfareblog.com/covid-19-speech', 'covid')
     True
     >>> url_satisfies_query('www.lawfareblog.com/covid-19-speech', 'coronavirus covid')
@@ -238,7 +218,13 @@ def url_satisfies_query(url, query):
     True
     '''
     satisfies = False
+    res = query.split()
     terms = query.split()
+
+    for term in res:
+        tmp = vectors.most_similar(term, topn=5)
+        for index in range(len(tmp)):
+            terms.append(tmp[index][0])
 
     num_terms=0
     for term in terms:
