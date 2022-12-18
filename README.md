@@ -1,10 +1,8 @@
 
 
 # Pagerank Project
-##Task1
 
-
-##task2
+*Updates using pagerank2.py added under task 1 part 2, and task 2 part 2.
 
 
 In this project, you will create a simple search engine for the website <https://www.lawfareblog.com>.
@@ -544,6 +542,24 @@ Your goal should be to discover what topics that www.lawfareblog.com considers t
     INFO:root:rank=8 pagerank=7.1946e-03 url=www.lawfareblog.com/us-names-iranian-revolutionary-guard-terrorist-organization-and-sanctions-international-criminal
     INFO:root:rank=9 pagerank=5.9410e-03 url=www.lawfareblog.com/iran-shoots-down-us-drone-domestic-and-international-legal-implications
    ```
+
+
+**Update using Pagerank2.py**
+
+    python3 pagerank.py --data=data/lawfareblog.csv.gz --search_query='trump'
+    INFO:gensim.models.keyedvectors:precomputing L2-norms of word weight vectors
+    INFO:root:rank=0 pagerank=5.7826e-03 url=www.lawfareblog.com/trump-asks-supreme-court-stay-congressional-subpeona-tax-returns
+    INFO:root:rank=1 pagerank=5.2338e-03 url=www.lawfareblog.com/document-trump-revokes-obama-executive-order-counterterrorism-strike-casualty-reporting
+    INFO:root:rank=2 pagerank=5.1297e-03 url=www.lawfareblog.com/trump-administrations-worrying-new-policy-israeli-settlements
+    INFO:root:rank=3 pagerank=4.6599e-03 url=www.lawfareblog.com/dc-circuit-overrules-district-courts-due-process-ruling-qasim-v-trump
+    INFO:root:rank=4 pagerank=4.5934e-03 url=www.lawfareblog.com/donald-trump-and-politically-weaponized-executive-branch
+    INFO:root:rank=5 pagerank=4.3071e-03 url=www.lawfareblog.com/how-trumps-approach-middle-east-ignores-past-future-and-human-condition
+    INFO:root:rank=6 pagerank=4.0935e-03 url=www.lawfareblog.com/why-trump-cant-buy-greenland
+    INFO:root:rank=7 pagerank=3.7591e-03 url=www.lawfareblog.com/oral-argument-summary-qassim-v-trump
+    INFO:root:rank=8 pagerank=3.4509e-03 url=www.lawfareblog.com/dc-circuit-court-denies-trump-rehearing-mazars-case
+    INFO:root:rank=9 pagerank=3.4484e-03 url=www.lawfareblog.com/second-circuit-rules-mazars-must-hand-over-trump-tax-returns-new-york-prosecutors
+
+
 
    Task 1, part 3:
    ```
@@ -2779,6 +2795,25 @@ Your goal should be to discover what topics that www.lawfareblog.com considers t
     INFO:root:rank=8 pagerank=6.4847e-02 url=www.lawfareblog.com/us-moves-dismiss-case-against-company-linked-ira-troll-farm
     INFO:root:rank=9 pagerank=6.4847e-02 url=www.lawfareblog.com/livestream-house-armed-services-committee-holds-hearing-priorities-missile-defense
    ```
+
+**Update using Pagerank2.py**
+
+    python3 pagerank2.py --data=data/lawfareblog.csv.gz --search_query='trump' --s_weight=.01
+    [==================================================] 100.0% 128.1/128.1MB downloaded
+    INFO:gensim.models.keyedvectors:precomputing L2-norms of word weight vectors
+    INFO:root:rank=0 pagerank=0.015782557427883148 url=www.lawfareblog.com/trump-asks-supreme-court-stay-congressional-subpeona-tax-returns
+    INFO:root:rank=1 pagerank=0.015233838930726051 url=www.lawfareblog.com/document-trump-revokes-obama-executive-order-counterterrorism-strike-casualty-reporting
+    INFO:root:rank=2 pagerank=0.01512967050075531 url=www.lawfareblog.com/trump-administrations-worrying-new-policy-israeli-settlements
+    INFO:root:rank=3 pagerank=0.014659898355603218 url=www.lawfareblog.com/dc-circuit-overrules-district-courts-due-process-ruling-qasim-v-trump
+    INFO:root:rank=4 pagerank=0.014593398198485374 url=www.lawfareblog.com/donald-trump-and-politically-weaponized-executive-branch
+    INFO:root:rank=5 pagerank=0.014307133853435516 url=www.lawfareblog.com/how-trumps-approach-middle-east-ignores-past-future-and-human-condition
+    INFO:root:rank=6 pagerank=0.014093476347625256 url=www.lawfareblog.com/why-trump-cant-buy-greenland
+    INFO:root:rank=7 pagerank=0.013759083114564419 url=www.lawfareblog.com/oral-argument-summary-qassim-v-trump
+    INFO:root:rank=8 pagerank=0.013450872153043747 url=www.lawfareblog.com/dc-circuit-court-denies-trump-rehearing-mazars-case
+    INFO:root:rank=9 pagerank=0.013448437675833702 url=www.lawfareblog.com/second-circuit-rules-mazars-must-hand-over-trump-tax-returns-new-york-prosecutors
+
+
+
 
 1. Ensure that all your changes to the `pagerank.py` and `README.md` files are committed to your repo and pushed to github.
 
